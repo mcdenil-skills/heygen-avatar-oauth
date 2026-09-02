@@ -2,7 +2,8 @@
 name: heygen-avatar-oauth
 description: Создаёт и ведёт личные HeyGen-аватары, выбирает вертикальный или горизонтальный образ, показывает превью голосов и создаёт видео из приложенной живой аудиозаписи через OAuth и кредиты подписки. Использовать по просьбам «озвучь моего аватара», «сделай ролик из голосового», «запишу свой голос», «создай мой Digital Twin», «добавь новый образ» или «подбери голос». Не использовать для обычного монтажа.
 license: MIT
-compatibility: Codex или Claude Code; Node.js 20+; HeyGen CLI 0.8.1+; FFmpeg и FFprobe; аккаунт HeyGen с OAuth-входом и подписочными кредитами.
+metadata:
+  compatibility: Codex или Claude Code; Node.js 20+; HeyGen CLI 0.8.1+; FFmpeg и FFprobe; аккаунт HeyGen с OAuth-входом и подписочными кредитами.
 ---
 
 # Видео с личным HeyGen-аватаром

@@ -32,7 +32,7 @@ test("публичный скилл имеет отдельное имя и ст
   const skill = read("SKILL.md");
   assert.match(skill, /^name: heygen-avatar-oauth$/m);
   assert.match(skill, /^license: MIT$/m);
-  assert.match(skill, /^compatibility: .+$/m);
+  assert.match(skill, /^metadata:\n  compatibility: .+$/m);
 });
 
 test("публичный комплект содержит русскую документацию и файлы сопровождения", () => {
