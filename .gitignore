@@ -1,0 +1,35 @@
+# Секреты и локальные настройки
+.env
+.env.local
+.env.*.local
+*.key
+*.pem
+credentials
+config.json
+
+# Пользовательские медиа и результаты
+*.mp3
+*.m4a
+*.aac
+*.ogg
+*.wav
+*.mp4
+*.mov
+renders/
+out/
+tmp/
+
+# Зависимости, отчёты и ОС
+node_modules/
+coverage/
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+
+# Локальная память проекта
+MEMORY.md
+memory/
+knowledge/
+_progress.md
