@@ -40,7 +40,7 @@ heygen auth login
 Скачайте репозиторий:
 
 ```bash
-git clone https://github.com/Ntmib/heygen-avatar-oauth.git
+git clone https://github.com/mcdenil-skills/heygen-avatar-oauth.git
 cd heygen-avatar-oauth
 ```
 

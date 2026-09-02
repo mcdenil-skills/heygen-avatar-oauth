@@ -24,7 +24,7 @@ API-ключ создавать и добавлять не нужно.
 ## 2. Установите скилл
 
 ```bash
-git clone https://github.com/Ntmib/heygen-avatar-oauth.git
+git clone https://github.com/mcdenil-skills/heygen-avatar-oauth.git
 cd heygen-avatar-oauth
 bash scripts/install.sh codex
 ```

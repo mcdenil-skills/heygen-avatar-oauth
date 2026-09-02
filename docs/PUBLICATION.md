@@ -28,7 +28,7 @@ gitleaks git --no-banner
 ```bash
 git add -A
 git commit -m "feat: первая публичная версия"
-git remote add origin https://github.com/Ntmib/heygen-avatar-oauth.git
+git remote add origin https://github.com/mcdenil-skills/heygen-avatar-oauth.git
 git push -u origin main
 ```
 
