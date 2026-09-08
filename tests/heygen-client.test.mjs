@@ -839,6 +839,47 @@ test("renderAvatarVideo загружает аудио, использует об
   }
 });
 
+test("renderAvatarVideo продолжает с готовым audio asset без повторной загрузки", async () => {
+  const stateDir = mkdtempSync(join(tmpdir(), "heygen-state-test-"));
+  const output = join(stateDir, "result", "avatar.mp4");
+  let assetCalls = 0;
+  let requestBody;
+  try {
+    const result = await renderAvatarVideo({
+      audioAssetId: "asset-existing",
+      lookId: "look-1",
+      aspect: "9:16",
+      output,
+      approveCreditSpend: true,
+    }, {
+      run: async (args) => {
+        if (args[0] === "auth") return { data: { billing_type: "subscription" } };
+        if (args[0] === "asset") { assetCalls += 1; throw new Error("must_not_upload"); }
+        if (args[0] === "video" && args[1] === "create") {
+          requestBody = JSON.parse(readFileSync(args[3], "utf8"));
+          return { data: { video_id: "video-1", status: "waiting" } };
+        }
+        if (args[0] === "video" && args[1] === "get") {
+          return { data: { id: "video-1", status: "completed" } };
+        }
+        if (args[0] === "video" && args[1] === "download") {
+          writeFileSync(args[4], "downloaded-video");
+          return {};
+        }
+        throw new Error(`unexpected_call: ${args.join(" ")}`);
+      },
+      probe: async () => ({ durationSec: 4, sizeBytes: 200000, width: 1080, height: 1920 }),
+      sleep: async () => {},
+      stateDir,
+    });
+    assert.equal(assetCalls, 0);
+    assert.equal(requestBody.audio_asset_id, "asset-existing");
+    assert.equal(result.videoId, "video-1");
+  } finally {
+    rmSync(stateDir, { recursive: true, force: true });
+  }
+});
+
 test("renderAvatarVideo обновляет сменяемый образ по стабильной группе и формату", async () => {
   const stateDir = mkdtempSync(join(tmpdir(), "heygen-state-test-"));
   const output = join(stateDir, "result", "avatar-landscape.mp4");
@@ -1118,6 +1159,7 @@ test("справка CLI сохраняет старые команды и по�
     "configure-voice",
     "voice-preview",
     "render",
+    "render-text",
     "resume",
   ]);
 });

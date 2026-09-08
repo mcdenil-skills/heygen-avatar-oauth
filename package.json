@@ -1,11 +1,11 @@
 {
   "name": "heygen-avatar-oauth-skill",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": true,
-  "description": "Русскоязычный скилл HeyGen Avatar для OAuth и кредитов подписки",
+  "description": "Русскоязычный скилл HeyGen Avatar для видео из аудио или текста",
   "type": "module",
   "scripts": {
-    "check": "node --check scripts/heygen-client.mjs",
+    "check": "node --check scripts/heygen-client.mjs && node --check scripts/elevenlabs-client.mjs",
     "test": "node --test tests/*.test.mjs",
     "verify": "npm run check && npm test"
   },

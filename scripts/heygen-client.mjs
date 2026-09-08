@@ -15,6 +15,9 @@ import {
 import { homedir, tmpdir } from "node:os";
 import { dirname, extname, isAbsolute, join } from "node:path";
 import { pathToFileURL } from "node:url";
+import {
+  synthesizeSpeech,
+} from "./elevenlabs-client.mjs";
 
 const CREDENTIALS_FILE = join(homedir(), ".heygen", "credentials");
 const CONFIG_FILE = join(
@@ -806,13 +809,19 @@ export async function renderAvatarVideo(input, options = {}) {
   const normalize = options.normalize ?? normalizeAudio;
 
   try {
-    const normalized = await normalize(input.audio, { ...options, workDir });
-    if (Number(normalized?.sizeBytes) > MAX_AUDIO_BYTES) {
-      throw new Error("audio_too_large");
+    let assetId = String(input.audioAssetId ?? "").trim();
+    if (assetId && !/^[A-Za-z0-9_-]{1,128}$/.test(assetId)) {
+      throw new Error("asset_id_invalid");
     }
-    const asset = await run(["asset", "create", "--file", normalized.path]);
-    const assetId = String(asset?.data?.asset_id ?? "");
-    if (!assetId) throw new Error("asset_id_missing");
+    if (!assetId) {
+      const normalized = await normalize(input.audio, { ...options, workDir });
+      if (Number(normalized?.sizeBytes) > MAX_AUDIO_BYTES) {
+        throw new Error("audio_too_large");
+      }
+      const asset = await run(["asset", "create", "--file", normalized.path]);
+      assetId = String(asset?.data?.asset_id ?? "");
+      if (!assetId) throw new Error("asset_id_missing");
+    }
 
     const requestPath = join(workDir, "request.json");
     writeFileSync(requestPath, `${JSON.stringify({
@@ -839,6 +848,53 @@ export async function renderAvatarVideo(input, options = {}) {
       ...options,
       run,
     });
+  } finally {
+    rmSync(workDir, { recursive: true, force: true });
+  }
+}
+
+export async function renderTextAvatarVideo(input, options = {}) {
+  if (!input?.approveCreditSpend) throw new Error("credit_spend_not_approved");
+  const textFile = String(input.textFile ?? "");
+  if (!isAbsolute(textFile)) throw new Error("text_file_must_be_absolute");
+  if (!existsSync(textFile) || !statSync(textFile).isFile()) {
+    throw new Error("text_file_not_found");
+  }
+  const script = readFileSync(textFile, "utf8").trim();
+  if (!script) throw new Error("text_empty");
+  if (script.length > 10_000) throw new Error("text_too_long");
+
+  const run = options.run ?? runHeyGen;
+  await ensureSubscription(run);
+  const config = options.config ?? loadConfig(options);
+  const aspect = input.aspect ?? config.defaultAspect ?? "9:16";
+  if (!["9:16", "16:9"].includes(aspect)) throw new Error("aspect_invalid");
+
+  const outputPath = requireAbsoluteOutput(input.videoOutput);
+  const workDir = mkdtempSync(join(tmpdir(), "heygen-avatar-text-"));
+  try {
+    const audioPath = join(workDir, "elevenlabs-voice.mp3");
+    const synthesize = options.synthesize ?? synthesizeSpeech;
+    const speech = await synthesize({
+      text: script,
+      output: audioPath,
+      approveCost: true,
+    }, options);
+    const render = options.render ?? renderAvatarVideo;
+    const video = await render({
+      audio: speech.outputPath ?? audioPath,
+      lookId: input.lookId,
+      aspect,
+      output: outputPath,
+      approveCreditSpend: true,
+    }, { ...options, run, config });
+    return {
+      ...video,
+      mode: "text",
+      voiceProvider: "elevenlabs",
+      characters: script.length,
+      speechCached: Boolean(speech.cached),
+    };
   } finally {
     rmSync(workDir, { recursive: true, force: true });
   }
@@ -1001,9 +1057,21 @@ async function main(argv) {
     const flags = parseFlags(rest);
     printJson(await renderAvatarVideo({
       audio: flags.audio,
+      audioAssetId: flags["audio-asset-id"],
       lookId: flags["look-id"],
       aspect: flags.aspect,
       output: flags.output,
+      approveCreditSpend: flags["approve-credit-spend"] === true,
+    }));
+    return;
+  }
+  if (command === "render-text") {
+    const flags = parseFlags(rest);
+    printJson(await renderTextAvatarVideo({
+      textFile: flags["text-file"],
+      videoOutput: flags["video-output"],
+      lookId: flags["look-id"],
+      aspect: flags.aspect,
       approveCreditSpend: flags["approve-credit-spend"] === true,
     }));
     return;
@@ -1029,6 +1097,7 @@ async function main(argv) {
         "configure-voice",
         "voice-preview",
         "render",
+        "render-text",
         "resume",
       ],
     });

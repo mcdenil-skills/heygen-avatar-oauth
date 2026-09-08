@@ -49,6 +49,7 @@ test("публичный комплект содержит русскую док
     "docs/INSTALL-CODEX.md",
     "docs/INSTALL-CLAUDE-CODE.md",
     "scripts/install.sh",
+    "scripts/elevenlabs-client.mjs",
     "package.json",
     ".github/workflows/ci.yml",
   ];
@@ -127,6 +128,7 @@ for (const agent of ["codex", "claude"]) {
       const installed = join(fakeHome, base, "heygen-avatar-oauth");
       assert.equal(existsSync(join(installed, "SKILL.md")), true);
       assert.equal(existsSync(join(installed, "scripts/heygen-client.mjs")), true);
+      assert.equal(existsSync(join(installed, "scripts/elevenlabs-client.mjs")), true);
       assert.equal(existsSync(join(installed, "config.json")), false);
       assert.equal(existsSync(join(installed, "credentials")), false);
     } finally {

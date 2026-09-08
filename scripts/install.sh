@@ -43,6 +43,8 @@ install_for() {
   install -m 0644 "$SOURCE_DIR/SKILL.md" "$destination/SKILL.md"
   install -m 0755 "$SOURCE_DIR/scripts/heygen-client.mjs" \
     "$destination/scripts/heygen-client.mjs"
+  install -m 0755 "$SOURCE_DIR/scripts/elevenlabs-client.mjs" \
+    "$destination/scripts/elevenlabs-client.mjs"
 
   echo "Установлено для $agent: $destination"
 }
